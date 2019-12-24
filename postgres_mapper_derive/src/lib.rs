@@ -26,8 +26,6 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
     #[allow(unused_mut)]
     let mut tokens = Tokens::new();
 
-
-
     #[allow(unused_variables)]
     let fields: &Fields = match ast.data {
         Struct(ref s) => {
@@ -39,17 +37,6 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
 
     #[allow(unused_variables)]
     let table_name = parse_table_attr(&ast);
-
-    #[cfg(feature = "postgres-support")]
-    {
-        impl_from_row(&mut tokens, &ast.ident, &fields);
-        impl_from_borrowed_row(&mut tokens, &ast.ident, &fields);
-
-        #[cfg(feature = "postgres-mapper")]
-        {
-            impl_postgres_mapper(&mut tokens, &ast.ident, &fields, &table_name);
-        }
-    }
 
     #[cfg(feature = "tokio-postgres-support")]
     {
@@ -63,46 +50,6 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
     }
 
     tokens
-}
-
-#[cfg(feature = "postgres-support")]
-fn impl_from_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
-    t.append(format!("
-impl<'a> From<::postgres::row::Row<'a>> for {struct_name} {{
-    fn from(row: ::postgres::row::Row<'a>) -> Self {{
-        Self {{", struct_name=struct_ident));
-
-    for field in fields {
-        let ident = field.ident.clone().expect("Expected structfield identifier");
-
-        t.append(format!("
-            {0}: row.get(\"{0}\"),", ident));
-    }
-
-    t.append("
-        }
-    }
-}");
-}
-
-#[cfg(feature = "postgres-support")]
-fn impl_from_borrowed_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
-    t.append(format!("
-impl<'a> From<&'a ::postgres::row::Row<'a>> for {struct_name} {{
-    fn from(row: &::postgres::row::Row<'a>) -> Self {{
-        Self {{", struct_name=struct_ident));
-
-    for field in fields {
-        let ident = field.ident.clone().expect("Expected structfield identifier");
-
-        t.append(format!("
-            {0}: row.get(\"{0}\"),", ident));
-    }
-
-    t.append("
-        }
-    }
-}");
 }
 
 #[cfg(all(feature = "postgres-support", feature = "postgres-mapper"))]
