@@ -17,11 +17,11 @@ status = "actively-developed"
 
 [dependencies.postgres]
 optional = true
-version = "0.15"
+version = "0.17"
 
 [dependencies.tokio-postgres]
 optional = true
-version = "0.3"
+version = "0.5"
 
 [features]
 default = ["postgres-support"]
