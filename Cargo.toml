@@ -12,19 +12,5 @@ version = "0.1.0"
 [lib]
 doctest = false
 
-[badges.maintenance]
-status = "actively-developed"
-
-[dependencies.postgres]
-optional = true
-version = "0.17"
-
-[dependencies.tokio-postgres]
-optional = true
-version = "0.5"
-
-[features]
-default = ["postgres-support"]
-postgres-support = ["postgres"]
-tokio-postgres-support = ["tokio-postgres"]
-
+[dependencies]
+tokio-postgres = "0.5"
