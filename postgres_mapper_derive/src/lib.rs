@@ -35,9 +35,6 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
         Union(ref u) => {panic!("Unions can not be mapped")},
     };
 
-    #[allow(unused_variables)]
-    let table_name = parse_table_attr(&ast);
-
     #[cfg(feature = "tokio-postgres-support")]
     {
         impl_tokio_from_row(&mut tokens, &ast.ident, &fields);
@@ -45,7 +42,7 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
 
         #[cfg(feature = "postgres-mapper")]
         {
-            impl_tokio_postgres_mapper(&mut tokens, &ast.ident, &fields, &table_name);
+            impl_tokio_postgres_mapper(&mut tokens, &ast.ident, &fields);
         }
     }
 
@@ -98,7 +95,6 @@ fn impl_tokio_postgres_mapper(
     t: &mut Tokens,
     struct_ident: &Ident,
     fields: &Fields,
-    table_name: &str,
 ) {
     t.append(format!("
 impl ::postgres_mapper::FromTokioPostgresRow for {struct_name} {{
@@ -132,107 +128,6 @@ impl ::postgres_mapper::FromTokioPostgresRow for {struct_name} {{
         })
     }");
 
-    t.append(format!(
-    "fn sql_table() -> String {{
-        \" {0} \".to_string()
-    }}"
-    , table_name));
-
-    t.append(
-    format!(
-    "fn sql_fields() -> String {{")
-    );
-
-    let field_name = fields.iter().map(|field| {
-        let ident = field.ident.clone().expect("Expected structfield identifier");
-        format!("{0}", ident)
-    }).collect::<Vec<String>>().join(", ");
-
-    t.append(format!("\" {0} \".to_string()", field_name));
-
-    t.append(
-    "}"
-    );
-
-    t.append(
-    format!(
-    "fn sql_table_dot_fields() -> String {{")
-    );
-
-    let field_name = fields.iter().map(|field| {
-        let ident = field.ident.clone().expect("Expected structfield identifier");
-        format!("{0}.{1}", table_name, ident)
-    }).collect::<Vec<String>>().join(", ");
-
-    t.append(format!("\" {0} \".to_string()", field_name));
-
-    t.append(
-    "}"
-    );
-
     t.append("
 }");
 }
-
-fn get_mapper_meta_items(attr: &syn::Attribute) -> Option<Vec<syn::NestedMeta>> {
-    if attr.path.segments.len() == 1 && attr.path.segments[0].ident == "pg_mapper" {
-        match attr.interpret_meta() {
-            Some(List(ref meta)) => Some(meta.nested.iter().cloned().collect()),
-            _ => {
-                panic!("declare table name: #[pg_mapper(table = \"foo\")]");
-            }
-        }
-    } else {
-        None
-    }
-}
-
-fn get_lit_str<'a>(
-    attr_name: &Ident,
-    meta_item_name: &Ident,
-    lit: &'a syn::Lit,
-) -> Result<&'a syn::LitStr, ()> {
-    if let syn::Lit::Str(ref lit) = *lit {
-        Ok(lit)
-    } else {
-        panic!(format!(
-            "expected pg_mapper {} attribute to be a string: `{} = \"...\"`",
-            attr_name, meta_item_name
-        ));
-        #[allow(unreachable_code)]
-        Err(())
-    }
-}
-
-fn parse_table_attr(ast: &DeriveInput) -> String {
-    // Parse `#[pg_mapper(table = "foo")]`
-    let mut table_name: Option<String> = None;
-
-    for meta_items in ast.attrs.iter().filter_map(get_mapper_meta_items) {
-
-        for meta_item in meta_items {
-            match meta_item {
-                // Parse `#[pg_mapper(table = "foo")]`
-                Meta(NameValue(ref m)) if m.ident == "table" => {
-                    if let Ok(s) = get_lit_str(&m.ident, &m.ident, &m.lit) {
-                        table_name = Some(s.value());
-                    }
-                }
-
-                Meta(ref meta_item) => {
-                    panic!(format!(
-                        "unknown pg_mapper container attribute `{}`",
-                        meta_item.name()
-                    ))
-                }
-
-                Literal(_) => {
-                    panic!("unexpected literal in pg_mapper container attribute");
-                }
-            }
-        }
-    }
-
-    table_name.expect("declare table name: #[pg_mapper(table = \"foo\")]")
-}
-
