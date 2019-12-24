@@ -109,7 +109,6 @@ use tokio_postgres::row::Row as TokioRow;
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-
 /// Trait containing various methods for converting from a `tokio-postgres` Row
 /// to a mapped type.
 ///
@@ -119,7 +118,6 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 /// The [`from_tokio_postgres_row`] method exists for consuming a `Row` - useful
 /// for iterator mapping - while [`from_postgres_row_ref`] exists for borrowing
 /// a `Row`.
-#[cfg(feature = "tokio-postgres-support")]
 pub trait FromTokioPostgresRow: Sized {
     /// Converts from a `tokio-postgres` `Row` into a mapped type, consuming the
     /// given `Row`.
@@ -162,7 +160,6 @@ pub enum Error {
     Conversion(Box<StdError + Send + Sync>),
 }
 
-#[cfg(feature = "tokio-postgres-support")]
 impl From<Box<StdError + Send + Sync>> for Error {
     fn from(err: Box<StdError + Send + Sync>) -> Self {
         Error::Conversion(err)
