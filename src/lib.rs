@@ -102,15 +102,12 @@
 //! This will derive implementations for converting from owned and referenced
 //! `tokio-postgres::row::Row`s, as well as implementing `postgres-mapper`'s
 //! `FromTokioPostgresRow` trait for non-panicking conversions.
-
-#[cfg(feature = "tokio-postgres-support")]
 extern crate tokio_postgres;
+
+use tokio_postgres::row::Row as TokioRow;
 
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result as FmtResult};
-
-#[cfg(feature = "tokio-postgres-support")]
-use tokio_postgres::row::Row as TokioRow;
 
 
 /// Trait containing various methods for converting from a `tokio-postgres` Row
@@ -160,8 +157,8 @@ pub trait FromTokioPostgresRow: Sized {
 pub enum Error {
     /// A column in a row was not found.
     ColumnNotFound,
+    TokioPostgresError,
     /// An error from the `tokio-postgres` crate while converting a type.
-    #[cfg(feature = "tokio-postgres-support")]
     Conversion(Box<StdError + Send + Sync>),
 }
 
@@ -182,8 +179,14 @@ impl StdError for Error {
     fn description(&self) -> &str {
         match *self {
             Error::ColumnNotFound => "Column in row not found",
-            #[cfg(feature = "tokio-postgres-support")]
+            Error::TokioPostgresError => "Tokio Postgres Error",
             Error::Conversion(ref inner) => inner.description(),
         }
+    }
+}
+
+impl From<tokio_postgres::error::Error> for Error {
+    fn from(err: tokio_postgres::error::Error) -> Self {
+        Error::TokioPostgresError
     }
 }
