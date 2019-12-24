@@ -68,8 +68,8 @@ fn impl_derive(ast: &DeriveInput) -> Tokens {
 #[cfg(feature = "postgres-support")]
 fn impl_from_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
     t.append(format!("
-impl<'a> From<::postgres::rows::Row<'a>> for {struct_name} {{
-    fn from(row: ::postgres::rows::Row<'a>) -> Self {{
+impl<'a> From<::postgres::row::Row<'a>> for {struct_name} {{
+    fn from(row: ::postgres::row::Row<'a>) -> Self {{
         Self {{", struct_name=struct_ident));
 
     for field in fields {
@@ -88,8 +88,8 @@ impl<'a> From<::postgres::rows::Row<'a>> for {struct_name} {{
 #[cfg(feature = "postgres-support")]
 fn impl_from_borrowed_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
     t.append(format!("
-impl<'a> From<&'a ::postgres::rows::Row<'a>> for {struct_name} {{
-    fn from(row: &::postgres::rows::Row<'a>) -> Self {{
+impl<'a> From<&'a ::postgres::row::Row<'a>> for {struct_name} {{
+    fn from(row: &::postgres::row::Row<'a>) -> Self {{
         Self {{", struct_name=struct_ident));
 
     for field in fields {
@@ -109,7 +109,7 @@ impl<'a> From<&'a ::postgres::rows::Row<'a>> for {struct_name} {{
 fn impl_postgres_mapper(t: &mut Tokens, struct_ident: &Ident, fields: &Fields, table_name: &str) {
     t.append(format!("
 impl ::postgres_mapper::FromPostgresRow for {struct_name} {{
-    fn from_postgres_row(row: ::postgres::rows::Row)
+    fn from_postgres_row(row: ::postgres::row::Row)
         -> Result<Self, ::postgres_mapper::Error> {{
         Ok(Self {{", struct_name=struct_ident));
 
@@ -124,7 +124,7 @@ impl ::postgres_mapper::FromPostgresRow for {struct_name} {{
         })
     }
 
-    fn from_postgres_row_ref(row: &::postgres::rows::Row)
+    fn from_postgres_row_ref(row: &::postgres::row::Row)
         -> Result<Self, ::postgres_mapper::Error> {
         Ok(Self {");
 
@@ -184,8 +184,8 @@ impl ::postgres_mapper::FromPostgresRow for {struct_name} {{
 #[cfg(feature = "tokio-postgres-support")]
 fn impl_tokio_from_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
     t.append(format!("
-impl From<::tokio_postgres::rows::Row> for {struct_name} {{
-    fn from(row: ::tokio_postgres::rows::Row) -> Self {{
+impl From<::tokio_postgres::row::Row> for {struct_name} {{
+    fn from(row: ::tokio_postgres::row::Row) -> Self {{
         Self {{", struct_name=struct_ident));
 
     for field in fields {
@@ -204,8 +204,8 @@ impl From<::tokio_postgres::rows::Row> for {struct_name} {{
 #[cfg(feature = "tokio-postgres-support")]
 fn impl_tokio_from_borrowed_row(t: &mut Tokens, struct_ident: &Ident, fields: &Fields) {
     t.append(format!("
-impl<'a> From<&'a ::tokio_postgres::rows::Row> for {struct_name} {{
-    fn from(row: &'a ::tokio_postgres::rows::Row) -> Self {{
+impl<'a> From<&'a ::tokio_postgres::row::Row> for {struct_name} {{
+    fn from(row: &'a ::tokio_postgres::row::Row) -> Self {{
         Self {{", struct_name=struct_ident));
 
     for field in fields {
@@ -231,7 +231,7 @@ fn impl_tokio_postgres_mapper(
 ) {
     t.append(format!("
 impl ::postgres_mapper::FromTokioPostgresRow for {struct_name} {{
-    fn from_tokio_postgres_row(row: ::tokio_postgres::rows::Row)
+    fn from_tokio_postgres_row(row: ::tokio_postgres::row::Row)
         -> Result<Self, ::postgres_mapper::Error> {{
         Ok(Self {{", struct_name=struct_ident));
 
@@ -246,7 +246,7 @@ impl ::postgres_mapper::FromTokioPostgresRow for {struct_name} {{
         })
     }
 
-    fn from_tokio_postgres_row_ref(row: &::tokio_postgres::rows::Row)
+    fn from_tokio_postgres_row_ref(row: &::tokio_postgres::row::Row)
         -> Result<Self, ::postgres_mapper::Error> {
         Ok(Self {");
 
