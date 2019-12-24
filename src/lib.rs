@@ -13,7 +13,7 @@
 //! ```rust
 //! extern crate postgres;
 //!
-//! use postgres::rows::Row;
+//! use postgres::row::Row;
 //!
 //! pub struct User {
 //!     pub id: i64,
@@ -70,11 +70,11 @@
 //! struct being derived with the provided `PostgresMapper` proc-macro):
 //!
 //! - `postgres-support`, which derives
-//! `impl<'a> From<::postgres::rows::Row<'a>> for T` and
+//! `impl<'a> From<::postgres::row::Row<'a>> for T` and
 //! `impl<'a> From<&'a ::postgres::Row<'a>> for T` implementations
 //! - `tokio-postgres-support`, which derives
-//! `impl From<::tokio_postgres::rows::Row> for T` and
-//! `impl From<&::tokio_postgres::rows::Row> for T` implementations
+//! `impl From<::tokio_postgres::row::Row> for T` and
+//! `impl From<&::tokio_postgres::row::Row> for T` implementations
 //! - `postgres-mapper` which, for each of the above features, implements
 //! `postgres-mapper`'s `FromPostgresRow` and/or `FromTokioPostgresRow` traits
 //!
@@ -100,7 +100,7 @@
 //! ```
 //!
 //! This will derive implementations for converting from owned and referenced
-//! `tokio-postgres::rows::Row`s, as well as implementing `postgres-mapper`'s
+//! `tokio-postgres::row::Row`s, as well as implementing `postgres-mapper`'s
 //! `FromTokioPostgresRow` trait for non-panicking conversions.
 
 #[cfg(feature = "postgres-support")]
@@ -113,9 +113,9 @@ use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 #[cfg(feature = "postgres-support")]
-use postgres::rows::Row as PostgresRow;
+use postgres::row::Row as PostgresRow;
 #[cfg(feature = "tokio-postgres-support")]
-use tokio_postgres::rows::Row as TokioRow;
+use tokio_postgres::row::Row as TokioRow;
 
 /// Trait containing various methods for converting from a postgres Row to a
 /// mapped type.
